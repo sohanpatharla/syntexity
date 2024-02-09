@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setMail] = useState("");
@@ -22,6 +24,7 @@ export default function Register() {
           password: password,
         }),
       }).then((res) => {
+        navigate("/room");
         console.log(res);
         setIsLoading(false);
       });
@@ -50,11 +53,11 @@ export default function Register() {
           required
         />
       </div>
-      <div className="my- font-halloween w-full">
+      <div className="my-  w-full">
         <input
           type="password"
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-md text-2xl font-bold outline-none p-2 w-full"
+          className="rounded-md text-2xl text-black font-bold outline-none p-2 w-full"
           placeholder="Password"
           required
         />

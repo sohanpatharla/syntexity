@@ -117,6 +117,9 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const ACTIONS = require("./src/Actions");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const session = require("express-session");
 
 const app = express();
 const server = http.createServer(app);
@@ -132,7 +135,46 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb+srv://syntexity:syntexity@cluster0.kqn8npq.mongodb.net/?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true })
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await User.findOne({ username });
+      if (!user) return done(null, false, { message: "Invalid username" });
+
+      const validPass = await bcrypt.compare(password, user.password);
+      if (!validPass) return done(null, false, { message: "Invalid password" });
+
+      return done(null, user);
+    } catch (error) {
+      return done(error);
+    }
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    done(err, user);
+  });
+});
+
+// Express session
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+mongoose.connect("mongodb+srv://syntexity:syntexity@cluster0.kqn8npq.mongodb.net/?retryWrites=true&w=majority")
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.error("Error connecting to MongoDB:", err));
 

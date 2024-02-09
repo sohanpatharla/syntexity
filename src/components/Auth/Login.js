@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router";
 // import { useSignIn } from "react-auth-kit";
 // import useSignIn from "react-auth-kit/hooks/useSignIn";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passDub, setPassdub] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   //   const signIn = useSignIn();
@@ -21,6 +24,7 @@ export default function Login() {
 
       if (response.data) {
         console.log("success");
+        navigate("/room");
       } else {
         console.log("failed login");
       }
@@ -39,7 +43,15 @@ export default function Login() {
     }
     setIsLoading(false);
   };
-
+  const handlePassword = (pass) => {
+    setPassword(pass);
+    let mask;
+    for(let i=0;i<pass.length;i++) {
+      mask+="*";
+    }
+    // const maskedInput = pass.replace(/./g, "*"); // Replace each character with an asterisk
+    setPassdub(mask);
+  };
   return (
     <form className="flex flex-col items-center" onSubmit={handleLogin}>
       <div className="w-full">
@@ -54,7 +66,8 @@ export default function Login() {
       <div className="mt-4 w-full">
         <input
           type="password"
-          onChange={(e) => setPassword(e.target.value)}
+          value={passDub}
+          onChange={(e) => handlePassword(e.target.value)}
           className="rounded-md text-2xl font-halloween outline-none p-2 w-full"
           placeholder="Password"
           required
