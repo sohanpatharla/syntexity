@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { language, cmtheme } from "../../src/atoms";
 import { useRecoilValue } from "recoil";
+import { toast } from 'react-hot-toast';  // or whatever toast library you're using
 import ACTIONS from "../Actions";
 import ChatArea from "./ChatArea";
 // CODE MIRROR
@@ -155,19 +156,46 @@ const Editor = ({
     };
   }, [lang, code, fetchCodeSuggestion]);
 
+  // useEffect(() => {
+  //   if (socketRef.current && socketRef.current.connected) {
+  //     socketRef.current.emit(ACTIONS.TOGGLE_EDITOR_LOCK, {
+  //       roomId,
+  //       editorLocked: isLocked,
+  //     });
+  //     socketRef.current.on(
+  //       ACTIONS.TOGGLE_EDITOR_LOCK,
+  //       ({ roomId, editorLocked }) => {
+  //         editorRef.current.setOption(
+  //           "readOnly",
+  //           editorLocked ? "nocursor" : false
+  //         );
+  //       }
+  //     );
+  //   }
+  // }, [isLocked, socketRef.current]);
   useEffect(() => {
     if (socketRef.current && socketRef.current.connected) {
+      // Emit the lock state change
       socketRef.current.emit(ACTIONS.TOGGLE_EDITOR_LOCK, {
         roomId,
         editorLocked: isLocked,
       });
+  
+      // Listen for lock state changes
       socketRef.current.on(
         ACTIONS.TOGGLE_EDITOR_LOCK,
-        ({ roomId, editorLocked }) => {
+        ({ editorLocked, username }) => {
           editorRef.current.setOption(
             "readOnly",
             editorLocked ? "nocursor" : false
           );
+          
+          // Show toast with username
+          if (editorLocked) {
+            toast(`${username} has locked the editor`);
+          } else {
+            toast(`${username} has unlocked the editor`);
+          }
         }
       );
     }

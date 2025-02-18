@@ -191,9 +191,19 @@ io.on("connection", (socket) => {
     io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
   });
 
+  // socket.on(ACTIONS.TOGGLE_EDITOR_LOCK, ({ roomId, editorLocked }) => {
+  //   // Emit the new TOGGLE_EDITOR_LOCK action to other users in the room
+  //   socket.to(roomId).emit(ACTIONS.TOGGLE_EDITOR_LOCK, { editorLocked });
+  // });
   socket.on(ACTIONS.TOGGLE_EDITOR_LOCK, ({ roomId, editorLocked }) => {
-    // Emit the new TOGGLE_EDITOR_LOCK action to other users in the room
-    socket.to(roomId).emit(ACTIONS.TOGGLE_EDITOR_LOCK, { editorLocked });
+    // Get the username of the person who toggled the lock
+    const username = userSocketMap[socket.id];
+    
+    // Emit the event with username included
+    socket.to(roomId).emit(ACTIONS.TOGGLE_EDITOR_LOCK, { 
+      editorLocked,
+      username 
+    });
   });
 
   // Handle UPLOAD_FILE event on the server side
