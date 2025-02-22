@@ -292,9 +292,9 @@ useEffect(() => {
     if (socketRef.current) {
       socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code: newCode, tabId }) => {
         if (tabId === activeTab && editorRef.current) {
-          const cursor = editorRef.current.getCursor(); // Store cursor position
+          //const cursor = editorRef.current.getCursor(); // Store cursor position
           editorRef.current.setValue(newCode);
-          editorRef.current.setCursor(cursor); // Restore cursor position
+          ///editorRef.current.setCursor(cursor); // Restore cursor position
           setCode(newCode);
           onCodeChange(newCode);
         }
@@ -315,9 +315,9 @@ useEffect(() => {
   // }, [activeTab, initialCode]);
   useEffect(() => {
     if (editorRef.current && initialCode) {
-      const cursor = editorRef.current.getCursor(); // Store cursor position
+      //const cursor = editorRef.current.getCursor(); // Store cursor position
       editorRef.current.setValue(initialCode);
-      editorRef.current.setCursor(cursor); // Restore cursor position
+      //editorRef.current.setCursor(cursor); // Restore cursor position
       setCode(initialCode);
     }
   }, [activeTab]);
@@ -345,9 +345,9 @@ useEffect(() => {
     reader.onload = (e) => {
       const fileContent = e.target.result;
       if (editorRef.current) {
-        const cursor = editorRef.current.getCursor();
+        //const cursor = editorRef.current.getCursor();
         editorRef.current.setValue(fileContent);
-        editorRef.current.setCursor(cursor);
+        //editorRef.current.setCursor(cursor);
         setCode(fileContent);
         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
           roomId,
