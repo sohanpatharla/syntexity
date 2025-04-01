@@ -43,6 +43,8 @@ const Editor = ({
   currentUsername,
   clients,
   output,
+  userInput,
+  setUserInput,
    activeTab,
   initialCode = ''
 }) => {
@@ -139,12 +141,46 @@ const Editor = ({
 //     init();
 //   }, [lang]);
 // Update the main useEffect for editor initialization
+
+// useEffect(() => {
+//   async function init() {
+//     if (editorRef.current) editorRef.current.toTextArea();
+
+//     editorRef.current = Codemirror.fromTextArea(
+//       document.getElementById("realtimeEditor"),
+//       {
+//         mode: { name: lang },
+//         theme: editorTheme,
+//         autofocus: true,
+//         dragDrop: true,
+//         autoCloseTags: true,
+//         autoCloseBrackets: true,
+//         lineNumbers: true,
+//         extraKeys: { Tab: "autocomplete" },
+//         readOnly: isLocked ? "nocursor" : false,
+//         lineWrapping: true,
+//         matchBrackets: true,
+//       }
+//     );
+
+//     if (initialCode) editorRef.current.setValue(initialCode);
+//     editorRef.current.on("change", (_, { origin }) => {
+//       const newCode = editorRef.current.getValue();
+//       setCode(newCode);
+//       onCodeChange(newCode);
+//       if (origin !== "setValue") socketRef.current.emit(ACTIONS.CODE_CHANGE, { roomId, code: newCode, tabId: activeTab });
+//     });
+//   }
+
+//   init();
+//   return () => editorRef.current?.toTextArea();
+// }, [activeTab]);
+
 useEffect(() => {
   async function init() {
     if (editorRef.current) {
       editorRef.current.toTextArea();
     }
-
     editorRef.current = Codemirror.fromTextArea(
       document.getElementById("realtimeEditor"),
       {
@@ -163,20 +199,17 @@ useEffect(() => {
         matchBrackets: true,
       }
     );
-
     // Set initial code
     if (initialCode !== undefined) {
       editorRef.current.setValue(initialCode);
       setCode(initialCode);
     }
-
     // Handle code changes
     editorRef.current.on("change", (instance, changes) => {
       const { origin } = changes;
       const newCode = instance.getValue();
       setCode(newCode);
       onCodeChange(newCode);
-      
       if (origin !== "setValue") {
         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
           roomId,
@@ -186,9 +219,7 @@ useEffect(() => {
       }
     });
   }
-  
   init();
-  
   return () => {
     if (editorRef.current) {
       editorRef.current.toTextArea();
@@ -423,13 +454,26 @@ useEffect(() => {
         </div>
       </div>
       <div>
-        <div className="border-2 rounded-lg p-2 m-2">
+      <div className="border-2 rounded-lg p-2 m-2">
           <textarea id="realtimeEditor"></textarea>
         </div>
-        <div className="border-2 rounded-lg h-[20vh] p-2 m-2">
-          <p className="text-white font-halloween text-2xl">Output</p>
+        <div className="grid grid-cols-2 gap-2 p-2">
+        <div className="border-2 rounded-lg p-2 h-[20vh]">
+          <p className="text-white font-bold text-xl">Input</p>
+          <textarea
+            className="w-full h-full bg-gray-800 text-white p-2 rounded"
+            value={userInput}
+            onChange={(e) => {
+              setUserInput(e.target.value);
+              //setInput(e.target.value);
+            }}
+          />
+        </div>
+        <div className="border-2 rounded-lg p-2 h-[20vh]">
+          <p className="text-white font-bold text-xl">Output</p>
           <p className="text-white mt-4">{output}</p>
         </div>
+      </div>
       </div>
       <ChatArea
         socketRef={socketRef}

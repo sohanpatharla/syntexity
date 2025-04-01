@@ -77,6 +77,10 @@ const UserSchema = new mongoose.Schema({
   email: String,
   password: String,
 });
+const ChatMessage = mongoose.model("ChatMessage", {
+  username: String,
+  message: String,
+});
 const User = mongoose.model("user", UserSchema);
 
 const createuser = async (req, res) => {
@@ -122,10 +126,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-const ChatMessage = mongoose.model("ChatMessage", {
-  username: String,
-  message: String,
-});
+
 
 const userSocketMap = {};
 const roomTabs = new Map(); // Store tabs and their content for each room
@@ -353,6 +354,32 @@ router.route("/signup").post(createuser);
 router.route("/login").post(loginUser);
 
 
+// // Initialize Hugging Face Inference
+// const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+
+// app.post("/api/suggest-code", async (req, res) => {
+//   const { codeSnippet, language } = req.body;
+//   if (!codeSnippet || !language) return res.status(400).json({ error: "Code snippet and language are required." });
+
+//   try {
+//     const response = await hf.textGeneration({
+//       model: "bigcode/starcoder",
+//       inputs: codeSnippet,
+//       parameters: { max_new_tokens: 100, temperature: 0.7, top_p: 0.9 },
+//     });
+
+//     const suggestion = response.generated_text.replace(codeSnippet, "").trim();
+//     if (!suggestion) throw new Error("Failed to generate a suggestion.");
+
+//     res.status(200).json({ suggestion });
+//   } catch (error) {
+//     console.error("Error generating suggestion:", error);
+//     res.status(500).json({ error: error.message || "Internal server error." });
+//   }
+// });
+
+
+
 // Initialize Hugging Face Inference
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -365,19 +392,7 @@ app.post("/api/suggest-code", async (req, res) => {
   }
 
   try {
-    // Prepare the prompt for code suggestion
-    // const prompt = `
-    //   You are a helpful AI assistant for code suggestions.
-    //   Language: ${language}
-    //   Given the following code snippet:
-    //   \`\`\`${language}
-    //   ${codeSnippet}
-    //   \`\`\`
-
-    //   Please suggest improvements or provide the next few lines of code that logically continue or complete the snippet.
-    // `;
     const prompt=`${codeSnippet}`
-
     // Use Hugging Face's code generation model
     const response = await hf.textGeneration({
       model: 'bigcode/starcoder',
@@ -411,14 +426,28 @@ app.post("/api/suggest-code", async (req, res) => {
 
 
 app.post("/execute", async (req, res) => {
+  console.log(req.body);
+  
   try {
+    // Prepare the payload for JDoodle API
+    const payload = {
+      clientId: req.body.clientId,
+      clientSecret: req.body.clientSecret,
+      script: req.body.script,
+      language: req.body.language,
+      versionIndex: "0", // Use default version
+      stdin: req.body.stdin || "" // Include user input if provided
+    };
+    
     const response = await axios.post(
       "https://api.jdoodle.com/v1/execute",
-      req.body
+      payload
     );
     res.json(response.data);
   } catch (error) {
-    res.status(error.response.status).json(error.response.data);
+    console.error("JDoodle API Error:", error.response?.data || error.message);
+    res.status(error.response?.status || 500)
+       .json(error.response?.data || { error: "Execution failed" });
   }
 });
 

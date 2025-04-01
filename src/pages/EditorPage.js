@@ -39,24 +39,30 @@ const EditorPage = () => {
   const [showAnalysis, setShowAnalysis] = useState(false); // Define showAnalysis state
   // const toggleAnalysis = () => setShowAnalysis(!showAnalysis); // Define toggleAnalysis function
   // console.log(codeRef.current)
-  const handleOutput = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/execute`,
-        {
-          clientId: process.env.REACT_APP_clientId,
-          clientSecret: process.env.REACT_APP_clientSecret,
-          language: lang,
-          script: code,
-        }
-      );
-      console.log(res);
-      setOutput(res.data.output);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [userInput, setUserInput] = useState("");
+
+// Update the handleOutput function
+const handleOutput = async (e) => {
+  e.preventDefault();
+  try {
+    setOutput("Executing code..."); // Feedback to user that execution is in progress
+    const res = await axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/execute`,
+      {
+        clientId: process.env.REACT_APP_clientId,
+        clientSecret: process.env.REACT_APP_clientSecret,
+        language: lang,
+        script: code,
+        stdin: userInput, // Add user input
+      }
+    );
+    console.log(res);
+    setOutput(res.data.output);
+  } catch (error) {
+    console.log(error);
+    setOutput("Error executing code: " + (error.response?.data?.error || error.message));
+  }
+};
 
   const [tabs, setTabs] = useState([
     { id: '1', name: 'main.js', content: '' }
@@ -749,6 +755,8 @@ const handleTabChange = (tabId) => {
           clients={clients}
           output={output}
           activeTab={activeTab}
+          userInput={userInput}
+          setUserInput={setUserInput}
           initialCode={tabContents[activeTab] || ''}
         />
       </div>
